@@ -162,56 +162,56 @@ def gen_kitti(dir_bins, f_pose, f_times, f_calib, sav_pos, sav_lid, addr_bin_beg
 if __name__ == "__main__":
     # =============================== KITTI Odometry ====================================
     # # KITTI00
-    # # dir_lid_bin = "/home/lewis/Downloads/datasets/kitti_raw/2011_10_03/2011_10_03_drive_0027_sync/velodyne_points/data"
+    dir_lid_bin = "/media/szz/Data/KITTI/Raw_Data/08/2011_09_30/2011_09_30_drive_0028_sync/velodyne_points/data"
     # dir_lid_bin = "/media/lewis/S7/Datasets/kitti/odometry/dataset/sequences/00/velodyne"
-    # fp_pose = "/media/lewis/S7/Datasets/kitti/odometry/poses/dataset/poses/00.txt"
-    # fp_times = "/media/lewis/S7/Datasets/kitti/odometry/dataset/sequences/00/times.txt"
-    # fp_calib = "/media/lewis/S7/Datasets/kitti/odometry/dataset/sequences/00/calib.txt"
-    # sav_1 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-sens_pose-kitti00.txt"
-    # sav_2 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-lidar_bins-kitti00.txt"
+    fp_pose = "/media/szz/Data/KITTI/data_odometry_poses/dataset/poses/08.txt"
+    fp_times = "/media/szz/Data/KITTI/data_odometry_calib/dataset/sequences/08/times.txt"
+    fp_calib = "/media/szz/Data/KITTI/data_odometry_calib/dataset/sequences/08/calib.txt"
+    sav_1 = "/home/szz/Documents/contour-context/results/ts-sens_pose-kitti08.txt"
+    sav_2 = "/home/szz/Documents/contour-context/results/ts-lidar_bins-kitti08.txt"
 
     ksq = "08"
     # KITTI08
-    # dir_lid_bin = "/media/lewis/S7/Datasets/kitti/odometry/dataset/sequences/%s/velodyne" % ksq
+    # dir_lid_bin = "/media/szz/Data/KITTI/Raw Data/2011_09_30_drive_0028_sync - KITTI 08/2011_09_30/2011_09_30_drive_0028_sync/velodyne_points/data" % ksq
     # # dir_lid_bin = "/home/lewis/Downloads/datasets/sequences/velodyne"
     # # dir_lid_bin = "/media/lewis/OS/downloads/sequences/velodyne"
-    # fp_pose = "/media/lewis/S7/Datasets/sematic_kitti/odometry/dataset/sequences/%s/poses.txt" % ksq
-    # fp_times = "/media/lewis/S7/Datasets/kitti/odometry/dataset/sequences/%s/times.txt" % ksq
-    # fp_calib = "/media/lewis/S7/Datasets/kitti/odometry/dataset/sequences/%s/calib.txt" % ksq
-    # sav_1 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-sens_pose-kitti%s.txt" % ksq
-    # sav_2 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-lidar_bins-kitti%s.txt" % ksq
+    # fp_pose = "/home/szz/dataset/semantic-kitti/sequences/%s/poses.txt" % ksq
+    # fp_times = "/home/szz/dataset/semantic-kitti/sequences/%s/times.txt" % ksq
+    # fp_calib = "/home/szz/dataset/semantic-kitti/sequences/%s/calib.txt" % ksq
+    # sav_1 = "/home/szz/Documents/contour-context/results/ts-sens_pose-kitti%s.txt" % ksq
+    # sav_2 = "/home/szz/Documents/contour-context/results/ts-lidar_bins-kitti%s.txt" % ksq
 
     # Onboard ssd:
-    dir_lid_bin = "/media/lewis/DC36269C362677A2/d/cont2_dataset/%s/velodyne" % ksq
-    fp_pose = "/media/lewis/DC36269C362677A2/d/cont2_dataset/%s/poses.txt" % ksq
-    fp_times = "/media/lewis/DC36269C362677A2/d/cont2_dataset/%s/times.txt" % ksq
-    fp_calib = "/media/lewis/DC36269C362677A2/d/cont2_dataset/%s/calib.txt" % ksq
-    sav_1 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-sens_pose-kitti%s.txt" % ksq
-    sav_2 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-lidar_bins-kitti%s.txt" % ksq
+    # dir_lid_bin = "/media/lewis/DC36269C362677A2/d/cont2_dataset/%s/velodyne" % ksq
+    # fp_pose = "/media/lewis/DC36269C362677A2/d/cont2_dataset/%s/poses.txt" % ksq
+    # fp_times = "/media/lewis/DC36269C362677A2/d/cont2_dataset/%s/times.txt" % ksq
+    # fp_calib = "/media/lewis/DC36269C362677A2/d/cont2_dataset/%s/calib.txt" % ksq
+    # sav_1 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-sens_pose-kitti%s.txt" % ksq
+    # sav_2 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-lidar_bins-kitti%s.txt" % ksq
 
     # # mulran as KITTI: KAIST01
     # dir_lid_bin = "/media/lewis/S7/Datasets/mulran_as_kitti/sequences/51/velodyne"
     # fp_pose = "/media/lewis/S7/Datasets/mulran_as_kitti/sequences/51/poses.txt"
     # fp_times = "/media/lewis/S7/Datasets/mulran_as_kitti/sequences/51/times.txt"
     # fp_calib = "/media/lewis/S7/Datasets/mulran_as_kitti/sequences/51/calib.txt"
-    # sav_1 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-sens_pose-kitti51.txt"
-    # sav_2 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-lidar_bins-kitti51.txt"
+    # sav_1 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-sens_pose-kitti51.txt"
+    # sav_2 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-lidar_bins-kitti51.txt"
 
     # # mulran as KITTI: RS02
     # dir_lid_bin = "/media/lewis/S7/Datasets/mulran_as_kitti/sequences/62/velodyne"
     # fp_pose = "/media/lewis/S7/Datasets/mulran_as_kitti/sequences/62/poses.txt"
     # fp_times = "/media/lewis/S7/Datasets/mulran_as_kitti/sequences/62/times.txt"
     # fp_calib = "/media/lewis/S7/Datasets/mulran_as_kitti/sequences/62/calib.txt"
-    # sav_1 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-sens_pose-kitti62.txt"
-    # sav_2 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-lidar_bins-kitti62.txt"
+    # sav_1 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-sens_pose-kitti62.txt"
+    # sav_2 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-lidar_bins-kitti62.txt"
 
     # # mulran as KITTI: DCC02
     # dir_lid_bin = "/media/lewis/S7/Datasets/mulran_as_kitti/sequences/72/velodyne"
     # fp_pose = "/media/lewis/S7/Datasets/mulran_as_kitti/sequences/72/poses.txt"
     # fp_times = "/media/lewis/S7/Datasets/mulran_as_kitti/sequences/72/times.txt"
     # fp_calib = "/media/lewis/S7/Datasets/mulran_as_kitti/sequences/72/calib.txt"
-    # sav_1 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-sens_pose-kitti72.txt"
-    # sav_2 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-lidar_bins-kitti72.txt"
+    # sav_1 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-sens_pose-kitti72.txt"
+    # sav_2 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-lidar_bins-kitti72.txt"
 
     gen_kitti(dir_lid_bin, fp_pose, fp_times, fp_calib, sav_1, sav_2)
 
@@ -220,20 +220,20 @@ if __name__ == "__main__":
     # # KAIST02
     # dir_lid_bin = "/media/lewis/S7/Datasets/mulran/KAIST02/Ouster"
     # fp_gt_ts_pose = "/media/lewis/S7/Datasets/mulran/KAIST02/global_pose.csv"
-    # sav_1 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-sens_pose-mulran-kaist02.txt"
-    # sav_2 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-lidar_bins-mulran-kaist02.txt"
+    # sav_1 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-sens_pose-mulran-kaist02.txt"
+    # sav_2 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-lidar_bins-mulran-kaist02.txt"
 
     # # Riverside02
     # dir_lid_bin = "/media/lewis/S7/Datasets/mulran/Riverside02/Ouster"
     # fp_gt_ts_pose = "/media/lewis/S7/Datasets/mulran/Riverside02/global_pose.csv"
-    # sav_1 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-sens_pose-mulran-rs02.txt"
-    # sav_2 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-lidar_bins-mulran-rs02.txt"
+    # sav_1 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-sens_pose-mulran-rs02.txt"
+    # sav_2 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-lidar_bins-mulran-rs02.txt"
 
     # # DCC02
     # dir_lid_bin = "/media/lewis/S7/Datasets/mulran/DCC02/Ouster"
     # fp_gt_ts_pose = "/media/lewis/S7/Datasets/mulran/DCC02/global_pose.csv"
-    # sav_1 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-sens_pose-mulran-dcc02.txt"
-    # sav_2 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-lidar_bins-mulran-dcc02.txt"
+    # sav_1 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-sens_pose-mulran-dcc02.txt"
+    # sav_2 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-lidar_bins-mulran-dcc02.txt"
     # #
     # #
     #

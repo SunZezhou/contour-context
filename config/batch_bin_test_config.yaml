@@ -45,17 +45,17 @@ ContourManagerConfig:
 
 #####################################################
 # Data path info file and visualization similarity thres
-fpath_sens_gt_pose: "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-sens_pose-kitti08.txt"
-fpath_lidar_bins: "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-lidar_bins-kitti08.txt"
-fpath_outcome_sav: "/home/lewis/catkin_ws2/src/contour-context/results/outcome_txt/outcome-kitti08.txt"
+fpath_sens_gt_pose: "/home/szz/Documents/contour-context/results/ts-sens_pose-kitti08.txt"
+fpath_lidar_bins: "/home/szz/Documents/contour-context/results/ts-lidar_bins-kitti08.txt"
+fpath_outcome_sav: "/home/szz/Documents/contour-context/results/outcome-kitti08.txt"
 
-#fpath_sens_gt_pose: "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-sens_pose-kitti62.txt"
-#fpath_lidar_bins: "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-lidar_bins-kitti62.txt"
-#fpath_outcome_sav: "/home/lewis/catkin_ws2/src/contour-context/results/outcome_txt/outcome-kitti62.txt"
+#fpath_sens_gt_pose: "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-sens_pose-kitti62.txt"
+#fpath_lidar_bins: "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-lidar_bins-kitti62.txt"
+#fpath_outcome_sav: "/home/szz/Documents/contour-context/src/contour-context/results/outcome_txt/outcome-kitti62.txt"
 
-#fpath_sens_gt_pose: "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-sens_pose-mulran-rs02.txt"
-#fpath_lidar_bins: "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-lidar_bins-mulran-rs02.txt"
-#fpath_outcome_sav: "/home/lewis/catkin_ws2/src/contour-context/results/outcome_txt/outcome-mulran-rs02.txt"
+#fpath_sens_gt_pose: "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-sens_pose-mulran-rs02.txt"
+#fpath_lidar_bins: "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-lidar_bins-mulran-rs02.txt"
+#fpath_outcome_sav: "/home/szz/Documents/contour-context/src/contour-context/results/outcome_txt/outcome-mulran-rs02.txt"
 
 
 correlation_thres: 0.64928  # sim score above this value will be plotted as positive

@@ -11,6 +11,9 @@
 #include "tools/bm_util.h"
 #include "tools/config_handler.h"
 
+# define PUB_ROS_MSG 1
+# define SAVE_MID_FILE 1
+
 const std::string PROJ_DIR = std::string(PJSRCDIR);
 
 SequentialTimeProfiler stp;
@@ -266,7 +269,7 @@ int main(int argc, char **argv) {
 
   // Check thres path
 //  std::string cand_score_config = PROJ_DIR + "/config/score_thres_kitti_bag_play.cfg";
-  std::string cand_score_config = "/home/lewis/catkin_ws2/src/contour-context/config/batch_bin_test_config.yaml";
+  std::string cand_score_config = "/home/szz/Documents/contour-context/src/contour-context/config/batch_bin_test_config.yaml";
 
   // Main process:
   BatchBinSpinner o(nh);

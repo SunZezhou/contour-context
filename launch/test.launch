@@ -1,0 +1,7 @@
+<launch>
+
+  <node pkg="cont2" type="cont2_batch_bin_test" name="test" />
+
+  <node pkg="rviz" type="rviz" name="cont2_viz" output="screen" args="-d $(find cont2)/config/dummy_lc.rviz"/>
+
+</launch>

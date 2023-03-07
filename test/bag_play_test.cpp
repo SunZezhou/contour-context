@@ -355,12 +355,12 @@ int main(int argc, char **argv) {
   printf("tag 0\n");
 
   // Check thres path
-  std::string cand_score_config = "/home/lewis/catkin_ws2/src/contour-context/config/score_thres_kitti_bag_play.cfg";
+  std::string cand_score_config = "/home/szz/Documents/contour-context/src/contour-context/config/score_thres_kitti_bag_play.cfg";
 
   // KITTI seq 05:
   uint64_t t_seq_beg = 100000;
   int p1 = 0, p2 = 2760;
-  std::string ts_path = "/home/lewis/catkin_ws2/src/contour-context/results/kitti_seq05_seconds.txt";
+  std::string ts_path = "/home/szz/Documents/contour-context/src/contour-context/results/kitti_seq05_seconds.txt";
   std::string gt_pose_path = "/home/lewis/Downloads/KITTI_data/dataset_gt/poses/05.txt";
   std::string seq_calib_path = "/home/lewis/Downloads/KITTI_data/dataset/sequences/05/calib.txt";
 
@@ -369,7 +369,7 @@ int main(int argc, char **argv) {
   // KITTI seq 00:
 //  uint64_t t_seq_beg = 100000; // any small ts
 //  int p1 = 0, p2 = 4540;
-//  std::string ts_path = "/home/lewis/catkin_ws2/src/contour-context/results/kitti_seq00_seconds.txt";
+//  std::string ts_path = "/home/szz/Documents/contour-context/src/contour-context/results/kitti_seq00_seconds.txt";
 //  std::string gt_pose_path = "/home/lewis/Downloads/KITTI_data/dataset_gt/poses/00.txt";
 //  std::string seq_calib_path = "/home/lewis/Downloads/KITTI_data/dataset/sequences/00/calib.txt";
 
