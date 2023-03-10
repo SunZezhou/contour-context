@@ -280,13 +280,14 @@ void ContourManager::makeContourRecursiveHelper(const cv::Rect &cc_roi, const cv
   float h_min = cfg_.lv_grads_[level], h_max = VAL_ABS_INF_;
 
   cv::Mat1f bev_roi = bev_(cc_roi), thres_roi;
+  // if bev_roi > h_min ? 255 : bev_roi
   cv::threshold(bev_roi, thres_roi, h_min, 255, cv::THRESH_BINARY);
 
   cv::Mat1b bin_bev_roi;
   thres_roi.convertTo(bin_bev_roi, CV_8U);
 
   if (level)
-//      cv::bitwise_and(bin_bev_roi, bin_bev_roi, bin_bev_roi, cc_mask);  // Wrong method: some pixels may be unaltered since neglected by mask
+    // cv::bitwise_and(bin_bev_roi, bin_bev_roi, bin_bev_roi, cc_mask);  // Wrong method: some pixels may be unaltered since neglected by mask
     cv::bitwise_and(bin_bev_roi, cc_mask, bin_bev_roi);
 
   if (level < cfg_.lv_grads_.size() - 1)
@@ -295,12 +296,13 @@ void ContourManager::makeContourRecursiveHelper(const cv::Rect &cc_roi, const cv
   // 2. calculate connected blobs
   cv::Mat1i labels, stats;  // int (CV_32S)
   cv::Mat centroids;  // not in use
+  // 创建联通域标记图，并返回bounding box， 面积，质心等
   cv::connectedComponentsWithStats(bin_bev_roi, labels, stats, centroids, 8, CV_32S);   // on local patch
 
   // 3. create contours for each connected component
   // https://stackoverflow.com/questions/37745274/opencv-find-perimeter-of-a-connected-component/48618464#48618464
   for (int n = 1; n < stats.rows; n++) {  // n=0: background
-//      printf("Area: %d\n", stats.at<int>(n, cv::CC_STAT_AREA));
+    // printf("Area: %d\n", stats.at<int>(n, cv::CC_STAT_AREA));
     if (stats(n, 4) < cfg_.min_cont_cell_cnt_)  // ignore contours that are too small
       continue;
 
@@ -319,34 +321,34 @@ void ContourManager::makeContourRecursiveHelper(const cv::Rect &cc_roi, const cv
         if (mask_n(i, j)) {
           poi_r = i + rect_g.y;
           poi_c = j + rect_g.x;
-//            tmp_rec.runningStats(i + rect_g.y, j + rect_g.x, bev_(i + rect_g.y, j + rect_g.x)); // discrete
-//          V2F c_point = pillar_pos2f_.at(poi_r * cfg_.n_col_ + poi_c);
+          // tmp_rec.runningStats(i + rect_g.y, j + rect_g.x, bev_(i + rect_g.y, j + rect_g.x)); // discrete
+          // V2F c_point = pillar_pos2f_.at(poi_r * cfg_.n_col_ + poi_c);
 
           int q_hash = poi_r * cfg_.n_col_ + poi_c;
           std::pair<int, Pixelf> sear_res = search_vec<Pixelf>(bev_pixfs_, 0,
                                                                (int) bev_pixfs_.size() - 1, q_hash);
           DCHECK_EQ(sear_res.first, q_hash);
           tmp_rec.runningStatsF(sear_res.second.row_f, sear_res.second.col_f, bev_(poi_r, poi_c)); // continuous
-//          tmp_rec.runningStatsF(c_point.x(), c_point.y(), bev_(poi_r, poi_c)); // continuous
+          // tmp_rec.runningStatsF(c_point.x(), c_point.y(), bev_(poi_r, poi_c)); // continuous
         }
 
-//    std::shared_ptr<ContourView> ptr_tmp_cv(new ContourView(level, poi_r, poi_c, parent));
+    // std::shared_ptr<ContourView> ptr_tmp_cv(new ContourView(level, poi_r, poi_c, parent));
     std::shared_ptr<ContourView> ptr_tmp_cv(new ContourView(level, poi_r, poi_c));
     ptr_tmp_cv->calcStatVals(tmp_rec, view_stat_cfg_);
     DCHECK(ptr_tmp_cv->cell_cnt_ == stats(n, 4));
     cont_views_[level].emplace_back(ptr_tmp_cv);    // add to the manager's matrix
-//    if (parent)
-//      parent->children_.emplace_back(ptr_tmp_cv);
+    // if (parent)
+    //   parent->children_.emplace_back(ptr_tmp_cv);
 
-    // recurse
-    // Get the mask for the contour
+    //   recurse
+    //   Get the mask for the contour
 
-//      printf("contour ROI: %d, %d, level: %d\n", mask_n.rows, mask_n.cols, level);
+    //   printf("contour ROI: %d, %d, level: %d\n", mask_n.rows, mask_n.cols, level);
     makeContourRecursiveHelper(rect_g, mask_n, level + 1, ptr_tmp_cv);
 
-//      if (level == 2) {
-//        cv::bitwise_or(mask_n, visualization(rect_g), visualization(rect_g));
-//      }
+    // if (level == 2) {
+    //   cv::bitwise_or(mask_n, visualization(rect_g), visualization(rect_g));
+    // }
 
   }
 

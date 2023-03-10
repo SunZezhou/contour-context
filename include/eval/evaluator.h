@@ -72,7 +72,8 @@ class ContLCDEvaluator {
 
   // bookkeeping variables
   int p_lidar_curr = -1;
-//  std::map<int, LaserScanInfo>::iterator it_lidar_curr;  // int index is a little safer than iterator/pointer?
+  // std::map<int, LaserScanInfo>::iterator it_lidar_curr;  
+  // int index is a little safer than iterator/pointer?
 
   // benchmark recorders
   SimpleRMSE<2> tp_trans_rmse, all_trans_rmse;
@@ -93,11 +94,11 @@ public:
       std::cerr << "Error opening gt pose file: " << fpath_pose << std::endl;
       return;
     }
-
+    // read all gt pose 
     const int line_len = 13; // timestamp and the 12-element sensor gt pose
     while (std::getline(infile1, sbuf)) {
       std::istringstream iss(sbuf);
-
+      // for every pose, gt_tss <- timestamps,  tmp_trans <- translation, tmp_rot_mat <- rotation
       double tmp;
       Eigen::Vector3d tmp_trans;
       Eigen::Matrix3d tmp_rot_mat;
@@ -106,16 +107,16 @@ public:
       for (int i = 0; i < line_len; i++) {
         CHECK(iss >> tmp);
         if (i == 0)
-          gt_tss.push_back(tmp);
-        else {
+          gt_tss.push_back(tmp);      //  tss -> timestamps
+        else {                        //  a0 -> time  other are 3*3 matrix : a1-a3 rotation  a4 trans
           if ((i - 1) % 4 == 3)
             tmp_trans((i - 1) / 4) = tmp;
           else
-//            tmp_rot_mat((i - 1) / 4, (i - 1) % 4);  // `-Wuninitialized` cannot detect this bug!
+          // tmp_rot_mat((i - 1) / 4, (i - 1) % 4);  // `-Wuninitialized` cannot detect this bug!
             tmp_rot_mat((i - 1) / 4, (i - 1) % 4) = tmp;
         }
       }
-
+      // first rotate then trans
       tmp_rot_q = Eigen::Quaterniond(tmp_rot_mat);
       tmp_tf.setIdentity();
       tmp_tf.rotate(tmp_rot_q);
@@ -128,16 +129,16 @@ public:
     printf("Added %lu stamped gt poses.\n", gt_poses.size());
 
     std::vector<int> sort_permu(gt_poses.size());
-    std::iota(sort_permu.begin(), sort_permu.end(), 0);
-    std::sort(sort_permu.begin(), sort_permu.end(), [&](const int &a, const int &b) {
+    std::iota(sort_permu.begin(), sort_permu.end(), 0);  // sort_permu = 1:sort_permu.size(), 递增序列
+    std::sort(sort_permu.begin(), sort_permu.end(), [&](const int &a, const int &b) {  // sort by timestamps
       return gt_tss[a] < gt_tss[b];
     });
-
+    // sort pose and tss in same order
     apply_sort_permutation(sort_permu, gt_poses);
     apply_sort_permutation(sort_permu, gt_tss);
 
-    //  2. Align to each laser scan a gt pose the closest ts. Log the scan files that have no associated gt
-    //  poses and skip them at this stage.
+    //  2. Align to each laser scan a gt pose the closest ts. 
+    //  Log the scan files that have no associated gt poses and skip them at this stage.
     infile2.open(fpath_laser, std::ios::in);
     if (infile2.rdstate() != std::ifstream::goodbit) {
       std::cerr << "Error opening laser info file: " << fpath_laser << std::endl;
@@ -147,8 +148,9 @@ public:
     std::vector<double> lidar_ts;
     std::vector<int> assigned_seq;
     std::vector<std::string> bin_paths;
+    // read all bins
     while (std::getline(infile2, sbuf)) {
-      std::istringstream iss(sbuf);
+      std::istringstream iss(sbuf);  //  output segment by ' '
 
       double ts;
       int seq;
@@ -163,7 +165,7 @@ public:
         iss >> bin_path;
         bin_paths.emplace_back(bin_path);
 
-//        printf("%.6f %d %s\n", ts, seq, bin_path.c_str());
+        // printf("%.6f %d %s\n", ts, seq, bin_path.c_str());
       }
     }
     infile2.close();
@@ -172,6 +174,7 @@ public:
     printf("Added %lu laser bin paths.\n", bin_paths.size());
 
     // filter the lidar bin paths
+    // 寻找当前雷达bin时间戳最接近的gt时间戳，且要求时间差小于ts_diff_tol (0.01)
     int cnt_valid_scans = 0;
     for (int i = 0; i < lidar_ts.size(); i++) {
       int gt_idx = lookupNN<double>(lidar_ts[i], gt_tss, ts_diff_tol);
@@ -184,7 +187,7 @@ public:
       tmp_info.seq = assigned_seq[i];
       cnt_valid_scans++;
       laser_info_.emplace_back(tmp_info);
-      assigned_seqs_.emplace_back(assigned_seq[i]);
+      assigned_seqs_.emplace_back(assigned_seq[i]);  // valid bin file seq
     }
     printf("Found %d laser scans with gt poses.\n", cnt_valid_scans);
 
@@ -198,48 +201,51 @@ public:
     }
     printf("Ordering check passed\n");
 
-//    // save gt pose and bin path, so we can arrange the data in KITTI format with script (format_mulran_as_kitti.py)
-//    std::FILE *fp1, *fp2, *fp3, *fp4, *fp5;
-//    std::string fp1_pose = std::string(PJSRCDIR) + "/results/mulran_to_kitti/poses.txt";
-//    std::string fp2_bin = std::string(PJSRCDIR) + "/results/mulran_to_kitti/used_bins.txt";
-//    std::string fp3_ts = std::string(PJSRCDIR) + "/results/mulran_to_kitti/times.txt";
-//
-//    // Use mulran data inplace, and re-index the sequence and timing of the scans
-//    std::string fp4_ts_lbins = std::string(PJSRCDIR) + "/results/mulran_to_kitti/ts-lidar_bins-.txt";
-//    std::string fp5_ts_spose = std::string(PJSRCDIR) + "/results/mulran_to_kitti/ts-sens_pose-.txt";
-//
-//    fp1 = std::fopen(fp1_pose.c_str(), "w");
-//    fp2 = std::fopen(fp2_bin.c_str(), "w");
-//    fp3 = std::fopen(fp3_ts.c_str(), "w");
-//    fp4 = std::fopen(fp4_ts_lbins.c_str(), "w");
-//    fp5 = std::fopen(fp5_ts_spose.c_str(), "w");
-//    for (int i = 0; i < laser_info_.size(); i++) {
-//      // Use mulran data inplace, and re-index the sequence and timing of the scans
-//      fprintf(fp4, "%.2f %d %s", i / 10.0, i, laser_info_[i].fpath.c_str());
-//      fprintf(fp5, "%.2f", i / 10.0);
-//
-//      for (int j = 0; j < 12; j++) {
-//        fprintf(fp1, "%.6f ", laser_info_[i].sens_pose(j / 4, j % 4));
-//        fprintf(fp5, "%.6f ", laser_info_[i].sens_pose(j / 4, j % 4));
-//      }
-//      fprintf(fp2, "%s", laser_info_[i].fpath.c_str());
-//      fprintf(fp3, "%.2f", i / 10.0);
-//      if (i < laser_info_.size() - 1) {
-//        fprintf(fp1, "\n");
-//        fprintf(fp2, "\n");
-//        fprintf(fp3, "\n");
-//        fprintf(fp4, "\n");
-//        fprintf(fp5, "\n");
-//      }
-//    }
-//    std::fclose(fp1);
-//    std::fclose(fp2);
-//    std::fclose(fp3);
-//    std::fclose(fp4);
-//    std::fclose(fp5);
-//    exit(0);
+    #if Format_MulRan_As_KITTI
+    // save gt pose and bin path, so we can arrange the data in KITTI format with script (format_mulran_as_kitti.py)
+    std::FILE *fp1, *fp2, *fp3, *fp4, *fp5;
+    std::string fp1_pose = std::string(PJSRCDIR) + "/results/mulran_to_kitti/poses.txt";
+    std::string fp2_bin = std::string(PJSRCDIR) + "/results/mulran_to_kitti/used_bins.txt";
+    std::string fp3_ts = std::string(PJSRCDIR) + "/results/mulran_to_kitti/times.txt";
+
+    // Use mulran data inplace, and re-index the sequence and timing of the scans
+    std::string fp4_ts_lbins = std::string(PJSRCDIR) + "/results/mulran_to_kitti/ts-lidar_bins-.txt";
+    std::string fp5_ts_spose = std::string(PJSRCDIR) + "/results/mulran_to_kitti/ts-sens_pose-.txt";
+
+    fp1 = std::fopen(fp1_pose.c_str(), "w");
+    fp2 = std::fopen(fp2_bin.c_str(), "w");
+    fp3 = std::fopen(fp3_ts.c_str(), "w");
+    fp4 = std::fopen(fp4_ts_lbins.c_str(), "w");
+    fp5 = std::fopen(fp5_ts_spose.c_str(), "w");
+    for (int i = 0; i < laser_info_.size(); i++) {
+      // Use mulran data inplace, and re-index the sequence and timing of the scans
+      fprintf(fp4, "%.2f %d %s", i / 10.0, i, laser_info_[i].fpath.c_str());
+      fprintf(fp5, "%.2f", i / 10.0);
+
+      for (int j = 0; j < 12; j++) {
+        fprintf(fp1, "%.6f ", laser_info_[i].sens_pose(j / 4, j % 4));
+        fprintf(fp5, "%.6f ", laser_info_[i].sens_pose(j / 4, j % 4));
+      }
+      fprintf(fp2, "%s", laser_info_[i].fpath.c_str());
+      fprintf(fp3, "%.2f", i / 10.0);
+      if (i < laser_info_.size() - 1) {
+        fprintf(fp1, "\n");
+        fprintf(fp2, "\n");
+        fprintf(fp3, "\n");
+        fprintf(fp4, "\n");
+        fprintf(fp5, "\n");
+      }
+    }
+    std::fclose(fp1);
+    std::fclose(fp2);
+    std::fclose(fp3);
+    std::fclose(fp4);
+    std::fclose(fp5);
+    exit(0);
+    #endif
 
     // 3. Add info about gt loop closure
+    // 3D空间中欧式距离小于5m范围被认为是真值回环
     int cnt_gt_lc_p = 0;
     int cnt_gt_lc = 0;
     for (auto &it_fast: laser_info_) {  // not necessarily ordered by assigned seq

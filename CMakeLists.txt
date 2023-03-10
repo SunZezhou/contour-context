@@ -13,9 +13,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wuninitialized")
 add_definitions(-DPJSRCDIR=\"${PROJECT_SOURCE_DIR}/\")
 
 # Macro parameters 1: No effects on execution results
-add_definitions(-DHUMAN_READABLE=0)  # bool: whether to tidy up and print (too detailed) results to screen
-add_definitions(-DSAVE_MID_FILE=0)   # bool: whether to save intermediate files (unnecessary to the program)
-add_definitions(-DPUB_ROS_MSG=0)     # bool: whether to publish message to the program
+add_definitions(-DHUMAN_READABLE=1)  # bool: whether to tidy up and print (too detailed) results to screen
+add_definitions(-DSAVE_MID_FILE=1)   # bool: whether to save intermediate files (unnecessary to the program)
+add_definitions(-DPUB_ROS_MSG=1)     # bool: whether to publish message to the program
 
 # Macro parameters 2: Affects execution results
 add_definitions(-DDYNAMIC_THRES=0)   # bool: whether to use dynamic threshold when checking (lift lower bound on the go)

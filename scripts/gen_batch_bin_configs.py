@@ -162,32 +162,32 @@ def gen_kitti(dir_bins, f_pose, f_times, f_calib, sav_pos, sav_lid, addr_bin_beg
 if __name__ == "__main__":
     # =============================== KITTI Odometry ====================================
     # # KITTI00
-    dir_lid_bin = "/media/szz/Data/KITTI/Raw_Data/08/2011_09_30/2011_09_30_drive_0028_sync/velodyne_points/data"
+    # # dir_lid_bin = "/home/lewis/Downloads/datasets/kitti_raw/2011_10_03/2011_10_03_drive_0027_sync/velodyne_points/data"
     # dir_lid_bin = "/media/lewis/S7/Datasets/kitti/odometry/dataset/sequences/00/velodyne"
-    fp_pose = "/media/szz/Data/KITTI/data_odometry_poses/dataset/poses/08.txt"
-    fp_times = "/media/szz/Data/KITTI/data_odometry_calib/dataset/sequences/08/times.txt"
-    fp_calib = "/media/szz/Data/KITTI/data_odometry_calib/dataset/sequences/08/calib.txt"
-    sav_1 = "/home/szz/Documents/contour-context/results/ts-sens_pose-kitti08.txt"
-    sav_2 = "/home/szz/Documents/contour-context/results/ts-lidar_bins-kitti08.txt"
+    # fp_pose = "/media/lewis/S7/Datasets/kitti/odometry/poses/dataset/poses/00.txt"
+    # fp_times = "/media/lewis/S7/Datasets/kitti/odometry/dataset/sequences/00/times.txt"
+    # fp_calib = "/media/lewis/S7/Datasets/kitti/odometry/dataset/sequences/00/calib.txt"
+    # sav_1 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-sens_pose-kitti00.txt"
+    # sav_2 = "/home/lewis/catkin_ws2/src/contour-context/sample_data/ts-lidar_bins-kitti00.txt"
 
     ksq = "08"
     # KITTI08
-    # dir_lid_bin = "/media/szz/Data/KITTI/Raw Data/2011_09_30_drive_0028_sync - KITTI 08/2011_09_30/2011_09_30_drive_0028_sync/velodyne_points/data" % ksq
-    # # dir_lid_bin = "/home/lewis/Downloads/datasets/sequences/velodyne"
-    # # dir_lid_bin = "/media/lewis/OS/downloads/sequences/velodyne"
-    # fp_pose = "/home/szz/dataset/semantic-kitti/sequences/%s/poses.txt" % ksq
-    # fp_times = "/home/szz/dataset/semantic-kitti/sequences/%s/times.txt" % ksq
-    # fp_calib = "/home/szz/dataset/semantic-kitti/sequences/%s/calib.txt" % ksq
-    # sav_1 = "/home/szz/Documents/contour-context/results/ts-sens_pose-kitti%s.txt" % ksq
-    # sav_2 = "/home/szz/Documents/contour-context/results/ts-lidar_bins-kitti%s.txt" % ksq
+    dir_lid_bin = "/media/szz/Data/KITTI/semantic_KITTI/data_odometry_velodyne/dataset/sequences/%s/velodyne" % ksq
+    # dir_lid_bin = "/home/lewis/Downloads/datasets/sequences/velodyne"
+    # dir_lid_bin = "/media/lewis/OS/downloads/sequences/velodyne"
+    fp_pose = "/media/szz/Data/KITTI/semantic_KITTI/data_odometry_velodyne/dataset/sequences/%s/poses.txt" % ksq
+    fp_times = "/media/szz/Data/KITTI/semantic_KITTI/data_odometry_velodyne/dataset/sequences/%s/times.txt" % ksq
+    fp_calib = "/media/szz/Data/KITTI/semantic_KITTI/data_odometry_velodyne/dataset/sequences/%s/calib.txt" % ksq
+    sav_1 = "/home/szz/Documents/contour-context/test/ts-sens_pose-kitti.txt" 
+    sav_2 = "/home/szz/Documents/contour-context/test/ts-lidar_bins-kitti.txt" 
 
     # Onboard ssd:
-    # dir_lid_bin = "/media/lewis/DC36269C362677A2/d/cont2_dataset/%s/velodyne" % ksq
-    # fp_pose = "/media/lewis/DC36269C362677A2/d/cont2_dataset/%s/poses.txt" % ksq
-    # fp_times = "/media/lewis/DC36269C362677A2/d/cont2_dataset/%s/times.txt" % ksq
-    # fp_calib = "/media/lewis/DC36269C362677A2/d/cont2_dataset/%s/calib.txt" % ksq
-    # sav_1 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-sens_pose-kitti%s.txt" % ksq
-    # sav_2 = "/home/szz/Documents/contour-context/src/contour-context/sample_data/ts-lidar_bins-kitti%s.txt" % ksq
+    # dir_lid_bin = "/home/szz/Documents/contour-context/test"
+    # fp_pose = "/home/szz/Documents/contour-context/test/poses.txt"
+    # fp_times = "/home/szz/Documents/contour-context/test/times.txt"
+    # fp_calib = "/home/szz/Documents/contour-context/test/calib.txt"
+    # sav_1 = "/home/szz/Documents/contour-context/test/ts-sens_pose-kitti.txt"
+    # sav_2 = "/home/szz/Documents/contour-context/test/ts-lidar_bins-kitti.txt"
 
     # # mulran as KITTI: KAIST01
     # dir_lid_bin = "/media/lewis/S7/Datasets/mulran_as_kitti/sequences/51/velodyne"

@@ -72,7 +72,7 @@ struct TreeBucket {
     double ts{};
     IndexOfKey iok;
 
-//    RetrTriplet() = default;
+    // RetrTriplet() = default;
 
     RetrTriplet(const RetrievalKey &_a, double _b, size_t g, int l, int s) : pt(_a), ts(_b), iok(g, l, s) {}
 
@@ -193,7 +193,7 @@ struct LayerDB {
 
   // TO-DO: rebalance and add buffer to the tree
   // Assumption: rebuild in turn instead of rebuild all at once. tr1 and tr2 are adjacent, tr1 has a lower bucket range.
-//  void rebuild(int seed, double curr_ts) {
+  // void rebuild(int seed, double curr_ts) {
   void rebuild(int idx_t1, double curr_ts);
 
   // TO-DO: query
@@ -299,11 +299,11 @@ struct CandidateManager {
           anch_props_[i].vote_cnt_ += sim_pairs.size();  // not unique
           // TODO: Do we need the `CandSimScore` object?
           // A: seems no.
-//          anch_props_[i].sim_score_.cnt_pairwise_sim_ = std::max(anch_props_[i].sim_score_.cnt_pairwise_sim_,
-//                                                                 (int) sim_pairs.size());
+          // anch_props_[i].sim_score_.cnt_pairwise_sim_ = std::max(anch_props_[i].sim_score_.cnt_pairwise_sim_,
+          //                                                       (int) sim_pairs.size());
           // TODO: Do we need to re-estimate the TF? Or just blend (manipulate with TF param and weights)?
           // current method: naively blend parameters
-//            anch_props_[i].T_delta_ = ContourManager::getTFFromConstell();
+          // anch_props_[i].T_delta_ = ContourManager::getTFFromConstell();
           int w1 = anch_props_[i].vote_cnt_, w2 = sim_pairs.size();
           Eigen::Vector2d trans_bl =
               (anch_props_[i].T_delta_.translation() * w1 + T_prop.translation() * w2) / (w1 + w2);
@@ -333,14 +333,14 @@ struct CandidateManager {
         anch_props_.back().constell_.insert({sim_pairs[j], sim_area_perc[j]});  // unique
       }
       anch_props_.back().vote_cnt_ = sim_pairs.size();
-//      anch_props_.back().sim_score_.cnt_pairwise_sim_ = sim_pairs.size();
+      // anch_props_.back().sim_score_.cnt_pairwise_sim_ = sim_pairs.size();
 
     }
   };
 
   //=============================================================
 
-//  const CandSimScore score_lb_;  // score lower/upper bound
+  // const CandSimScore score_lb_;  // score lower/upper bound
   std::shared_ptr<const ContourManager> cm_tgt_;
 
   // dynamic thresholds param and var for different checks. Used to replace `score_lb_`
@@ -352,7 +352,7 @@ struct CandidateManager {
   std::vector<CandidatePoseData> candidates_;
 
   // bookkeeping:
-//  bool adding_finished = false, tidy_finished=false;
+  // bool adding_finished = false, tidy_finished=false;
   int flow_valve = 0; // avoid to reverse the work flow
   int cand_aft_check1 = 0;  // number of candidate occurrence (not unique places) after each check
   int cand_aft_check2 = 0;
@@ -376,11 +376,11 @@ struct CandidateManager {
                                            const ContourSimThresConfig &cont_sim) {
     DCHECK(flow_valve == 0);
     int cand_id = cm_cand->getIntID();
-//    CandSimScore curr_score;
+    // CandSimScore curr_score;
 
     // count the number of passed contour pairs in each check
     // TODO: optimize this cnt_pass return variable
-//    std::array<int, 4> cnt_pass = {0, 0, 0, 0};  // 0: anchor sim; 1: constell sim; 2: constell corresp sim; 3:
+    // std::array<int, 4> cnt_pass = {0, 0, 0, 0};  // 0: anchor sim; 1: constell sim; 2: constell corresp sim; 3:
     // Q: is it the same as `curr_score`?
     CandidateScoreEnsemble ret_score;
 
@@ -390,14 +390,14 @@ struct CandidateManager {
       return ret_score;
     cand_aft_check1++;
 
-#if HUMAN_READABLE
+    #if HUMAN_READABLE
     // human readability
     printf("Before check, curr bar:");
     sim_var_.sim_constell.print();
     printf("\t");
     sim_var_.sim_pair.print();
     printf("\n");
-#endif
+    #endif
 
     // check (2/4): pure constellation check
     std::vector<ConstellationPair> tmp_pairs1;
@@ -487,8 +487,7 @@ struct CandidateManager {
     return ret_score;
   }
 
-  // here "anchor" is no longer meaningful, since we've established constellations beyond any single anchor BCI can
-  // offer
+  // here "anchor" is no longer meaningful, since we've established constellations beyond any single anchor BCI can offer
   // pre-calculate the correlation scores for each candidate set, and check the correlation scores.
   /// Main func 2/3:
   void tidyUpCandidates() {
@@ -510,13 +509,13 @@ struct CandidateManager {
         std::vector<float> lev_perc(cm_tgt_->getConfig().lv_grads_.size(), 0);
         for (const auto &pr: candidate.anch_props_[i].constell_) {
           lev_perc[pr.first.level] += pr.second;
-//          level_perc_used_src[pr.level] += cm_src->getAreaPerc(pr.level, pr.seq_src);
-//          level_perc_used_tgt[pr.level] += cm_tgt_->getAreaPerc(pr.level, pr.seq_tgt);
+          // level_perc_used_src[pr.level] += cm_src->getAreaPerc(pr.level, pr.seq_src);
+          // level_perc_used_tgt[pr.level] += cm_tgt_->getAreaPerc(pr.level, pr.seq_tgt);
         }
 
         float perc = 0;
         for (int j = 0; j < NUM_BIN_KEY_LAYER; j++)
-//          perc += LAYER_AREA_WEIGHTS[j] * (0 + 2 * level_perc_used_tgt[DIST_BIN_LAYERS[j]]) / 2;
+          // perc += LAYER_AREA_WEIGHTS[j] * (0 + 2 * level_perc_used_tgt[DIST_BIN_LAYERS[j]]) / 2;
           perc += LAYER_AREA_WEIGHTS[j] * lev_perc[DIST_BIN_LAYERS[j]];
 
         candidate.anch_props_[i].area_perc_ = perc;
@@ -572,7 +571,7 @@ struct CandidateManager {
       alignLB<ScorePostProc>(new_post_lb, sim_var_.sim_post);
       alignUB<ScorePostProc>(sim_ub_.sim_post, sim_var_.sim_post);
 #endif
-//      candidate.anch_props_[0].sim_score_.correlation_ = corr_score_init;
+      // candidate.anch_props_[0].sim_score_.correlation_ = corr_score_init;
       candidate.corr_est_ = std::move(corr_est);
     }
 
@@ -614,24 +613,24 @@ struct CandidateManager {
       return 0;
 
     std::sort(candidates_.begin(), candidates_.end(), [&](const CandidatePoseData &d1, const CandidatePoseData &d2) {
-//      return d1.anch_props_[0].vote_cnt_ > d2.anch_props_[0].vote_cnt_;  // anch_props_ is guaranteed to be non-empty
-//      return d1.sim_score_ > d2.sim_score_;
+      // return d1.anch_props_[0].vote_cnt_ > d2.anch_props_[0].vote_cnt_;  // anch_props_ is guaranteed to be non-empty
+      // return d1.sim_score_ > d2.sim_score_;
       return d1.anch_props_[0].correlation_ > d2.anch_props_[0].correlation_;
     });
 
     int pre_sel_size = std::min(max_fine_opt, (int) candidates_.size());
     for (int i = 0; i < pre_sel_size; i++) {
       auto tmp_res = candidates_[i].corr_est_->calcCorrelation();  // fine optimize
-//      candidates_[i].anch_props_[0].sim_score_.correlation_ = tmp_res.first;
+      // candidates_[i].anch_props_[0].sim_score_.correlation_ = tmp_res.first;
       candidates_[i].anch_props_[0].correlation_ = tmp_res.first;
       candidates_[i].anch_props_[0].T_delta_ = tmp_res.second;
     }
 
     std::sort(candidates_.begin(), candidates_.begin() + pre_sel_size,
               [&](const CandidatePoseData &d1, const CandidatePoseData &d2) {
-//                return d1.sim_score_ > d2.sim_score_;
-//                return d1.sim_score_.correlation_ > d2.sim_score_.correlation_;
-//            x    return d1.anch_props_[0].sim_score_.correlation_ > d2.anch_props_[0].sim_score_.correlation_;
+                // return d1.sim_score_ > d2.sim_score_;
+                // return d1.sim_score_.correlation_ > d2.sim_score_.correlation_;
+                // return d1.anch_props_[0].sim_score_.correlation_ > d2.anch_props_[0].sim_score_.correlation_;
                 return d1.anch_props_[0].correlation_ > d2.anch_props_[0].correlation_;
               });
 
@@ -656,10 +655,10 @@ struct CandidateManager {
 };
 
 struct ContourDBConfig {
-//  int num_trees_ = 6;  // max number of trees per layer
-//  int max_candi_per_layer_ = 40;  // should we use different values for different layers?
-//  int max_total_candi_ = 80;  // should we use different values for different layers?
-//  KeyFloatType max_dist_sq_ = 200.0;
+  // int num_trees_ = 6;  // max number of trees per layer
+  // int max_candi_per_layer_ = 40;  // should we use different values for different layers?
+  // int max_total_candi_ = 80;  // should we use different values for different layers?
+  // KeyFloatType max_dist_sq_ = 200.0;
   int nnk_ = 50;  //
   int max_fine_opt_ = 10;
   std::vector<int> q_levels_;  // the layers to generate anchors (Note the difference between `DIST_BIN_LAYERS`)
@@ -683,10 +682,10 @@ public:
     CHECK(!cfg_.q_levels_.empty());
   }
 
-//  // TOxDO: 1. query database
-//  void queryKNN(const ContourManager &q_cont,
-//                std::vector<std::shared_ptr<const ContourManager>> &cand_ptrs,
-//                std::vector<KeyFloatType> &dist_sq) const; // outdated
+  // // TOxDO: 1. query database
+  // void queryKNN(const ContourManager &q_cont,
+  //               std::vector<std::shared_ptr<const ContourManager>> &cand_ptrs,
+  //               std::vector<KeyFloatType> &dist_sq) const; // outdated
 
   // TODO: unlike queryKNN, this one directly calculates relative transform and requires no post processing
   //  outside the function. The returned cmng are the matched ones.
@@ -708,17 +707,17 @@ public:
     double t1 = 0, t2 = 0, t3 = 0, t4 = 0, t5 = 0;
     TicToc clk;
 
-//    CandSimScore score_lb(10, 5, 0.65);  // TODO: use new thres init
-//    CandidateManager cand_mng(q_ptr, score_lb);
+    // CandSimScore score_lb(10, 5, 0.65);  // TODO: use new thres init
+    // CandidateManager cand_mng(q_ptr, score_lb);
 
 
 
-//    CandidateManager cand_mng(q_ptr, s_const_lb, s_const_ub, s_pair_lb, s_pair_ub);
+    // CandidateManager cand_mng(q_ptr, s_const_lb, s_const_ub, s_pair_lb, s_pair_ub);
     CandidateManager cand_mng(q_ptr, thres_lb, thres_ub);
 
     // for each layer
-//    std::set<size_t> matched_gidx;
-    for (int ll = 0; ll < cfg_.q_levels_.size(); ll++) {
+    // std::set<size_t> matched_gidx;
+    for (int ll = 0; ll < cfg_.q_levels_.size(); ll++) {  //  只比较3层
       const std::vector<BCI> &q_bcis = q_ptr->getLevBCI(cfg_.q_levels_[ll]);
       std::vector<RetrievalKey> q_keys = q_ptr->getLevRetrievalKey(cfg_.q_levels_[ll]);
       DCHECK_EQ(q_bcis.size(), q_keys.size());
@@ -728,7 +727,7 @@ public:
           clk.tic();
           stp.start();
           std::vector<std::pair<IndexOfKey, KeyFloatType>> tmp_res;
-//          layer_db_[ll].layerRangeSearch(q_keys[seq], 3.0, tmp_res);  // 5.0: squared norm
+          // layer_db_[ll].layerRangeSearch(q_keys[seq], 3.0, tmp_res);  // 5.0: squared norm
           // calculate max query distance from key bits:
           KeyFloatType key_bounds[3][2];
           key_bounds[0][0] = q_keys[seq][0] * 0.8;  // sqrt(max_eig*cnt)
@@ -749,16 +748,16 @@ public:
                                (q_keys[seq][2] - key_bounds[2][1]) * (q_keys[seq][2] - key_bounds[2][1]));
 
 
-//          layer_db_[ll].layerKNNSearch(q_keys[seq], 100, dist_ub, tmp_res);
+          // layer_db_[ll].layerKNNSearch(q_keys[seq], 100, dist_ub, tmp_res);
           layer_db_[ll].layerKNNSearch(q_keys[seq], cfg_.nnk_, dist_ub, tmp_res);
-//          layer_db_[ll].layerKNNSearch(q_keys[seq], 200, 2000.0, tmp_res);
+          // layer_db_[ll].layerKNNSearch(q_keys[seq], 200, 2000.0, tmp_res);
           stp.record("KNN search");
           t1 += clk.toc();
 
-#if HUMAN_READABLE
+          #if HUMAN_READABLE
           printf("Dist ub: %f\n", dist_ub);
-          printf("L:%d S:%d. Found in range: %lu\n", q_levels_[ll], seq, tmp_res.size());
-#endif
+          printf("L:%d S:%d. Found in range: %lu\n", cfg_.q_levels_[ll], seq, tmp_res.size());
+          #endif
           // 2. check
           stp.start();
           for (const auto &sear_res: tmp_res) {
@@ -803,8 +802,8 @@ public:
 
     printf("T knn search : %7.5f\n", t1);
     printf("T running chk: %7.5f\n", t2);
-//    printf("T conste check: %7.5f\n", t3);
-//    printf("T calc corresp: %7.5f\n", t4);
+    // printf("T conste check: %7.5f\n", t3);
+    // printf("T calc corresp: %7.5f\n", t4);
     printf("T fine optim : %7.5f\n", t5);
 
     // TODO: separate pose refinement into another protected function

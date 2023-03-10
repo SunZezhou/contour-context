@@ -1,4 +1,6 @@
 .idea
+.catkin_tools
 log
 sample_data
 results
+.DS_Sotre

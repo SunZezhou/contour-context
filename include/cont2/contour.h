@@ -146,7 +146,7 @@ struct ContourView {
     vol3_mean_ = rec.cell_vol3_ / cell_cnt_;
     com_ = rec.cell_vol3_torq_.cast<float>() / rec.cell_vol3_;
 
-//    strip_width_.clear();   desc cont itself (3/6)
+    // strip_width_.clear();   desc cont itself (3/6)
 
     // eccentricity:
     if (cell_cnt_ < cfg.min_cell_cov) {
@@ -155,11 +155,11 @@ struct ContourView {
       eig_vecs_.setIdentity();
       ecc_feat_ = false;
       com_feat_ = false;
-//      strip_width_.resize(cfg.half_strip_num_, 0);   desc cont itself (2/6)
+      // strip_width_.resize(cfg.half_strip_num_, 0);   desc cont itself (2/6)
     } else {
       pos_cov_ =
-//          (rec.cell_pos_tss_ - rec.cell_pos_sum_ * pos_mean_.transpose() - pos_mean_ * rec.cell_pos_sum_.transpose() +
-//           pos_mean_ * pos_mean_.transpose() * cell_cnt_) / (cell_cnt_ - 1);
+          // (rec.cell_pos_tss_ - rec.cell_pos_sum_ * pos_mean_.transpose() - pos_mean_ * rec.cell_pos_sum_.transpose() +
+          // pos_mean_ * pos_mean_.transpose() * cell_cnt_) / (cell_cnt_ - 1);
           (rec.cell_pos_tss_.cast<float>() - pos_mean_ * pos_mean_.transpose() * cell_cnt_) /
           (cell_cnt_ - 1); // simplified, verified
       Eigen::SelfAdjointEigenSolver<M2F> es(pos_cov_.template selfadjointView<Eigen::Upper>());
@@ -177,7 +177,7 @@ struct ContourView {
       com_feat_ = centerOfMassSalient(cfg);
 
       // describe ellipse with ratio areas. desc cont itself (1/6)
-/*      std::vector<V2D> strips;  // {perp long axis:along long axis}, since the large eig vec is the second one
+      /* std::vector<V2D> strips;  // {perp long axis:along long axis}, since the large eig vec is the second one
       for (auto &voxels_po: voxels_pos_) {
         strips.emplace_back((voxels_po - pos_mean_).transpose() * eig_vecs_);
       }
@@ -189,20 +189,20 @@ struct ContourView {
       strip_end += 1e-3;
 
       // descriptor 1: rotation invariant
-//      std::vector<std::pair<double, double>> bins(cfg.half_strip_num_, {-1, -1});  // interpolation (1/2)
-//      bins.front() = {0, 0};
-//      bins.back() = {0, 0};
+      // std::vector<std::pair<double, double>> bins(cfg.half_strip_num_, {-1, -1});  // interpolation (1/2)
+      // bins.front() = {0, 0};
+      // bins.back() = {0, 0};
 
       std::vector<std::pair<double, double>> bins(cfg.half_strip_num_, {0.0, 0.0});
       std::vector<std::pair<int, int>> bins_elem_cnt(cfg.half_strip_num_, {0, 0});
       double step = (strip_end - strip_beg) / cfg.half_strip_num_;
       for (auto &strip: strips) {
         int bin_idx = std::floor((strip.y() - strip_beg) / step);
-//        // case 1: use max value as feature "bit":
-//        if (strip.x() >= 0)
-//          bins[bin_idx].first = bins[bin_idx].first > strip.x() ? bins[bin_idx].first : strip.x();
-//        else
-//          bins[bin_idx].second = bins[bin_idx].second > -strip.x() ? bins[bin_idx].second : -strip.x();
+        // // case 1: use max value as feature "bit":
+        // if (strip.x() >= 0)
+        //   bins[bin_idx].first = bins[bin_idx].first > strip.x() ? bins[bin_idx].first : strip.x();
+        // else
+        //   bins[bin_idx].second = bins[bin_idx].second > -strip.x() ? bins[bin_idx].second : -strip.x();
 
         // case 2 (1/2): use mean value as feature bit
         if (strip.x() >= 0) {
@@ -222,33 +222,33 @@ struct ContourView {
           bins[i].second /= bins_elem_cnt[i].second;
       }
 
-//      // // fill the -1 s, interpolation (2/2)
-//      // // NOTE: we may not need interpolate, since very small ellipse are not very likely to be chosen as features.
-//      int p1 = 0, p2 = 0;
-//      for (int i = 1; i < cfg.half_strip_num_; i++) {    // the first and last bin always has elements (val !=-1)
-//        if (bins[i].first >= 0) {
-//          if (i - p1 > 1) {  // we can do w/o this if
-//            double diff_lev = (bins[i].first - bins[p1].first) / (i - p1);
-//            for (int j = p1 + 1; j < i; j++)
-//              bins[j].first = (j - p1) * diff_lev + bins[p1].first;
-//          }
-//          p1 = i;
-//        }
-//        if (bins[i].second >= 0) {
-//          if (i - p2 > 1) {
-//            double diff_lev = (bins[i].second - bins[p2].second) / (i - p2);
-//            for (int j = p2 + 1; j < i; j++)
-//              bins[j].second = (j - p2) * diff_lev + bins[p2].second;
-//          }
-//          p2 = i;
-//        }
-//      }
+      // // // fill the -1 s, interpolation (2/2)
+      // // // NOTE: we may not need interpolate, since very small ellipse are not very likely to be chosen as features.
+      // int p1 = 0, p2 = 0;
+      // for (int i = 1; i < cfg.half_strip_num_; i++) {    // the first and last bin always has elements (val !=-1)
+      //   if (bins[i].first >= 0) {
+      //     if (i - p1 > 1) {  // we can do w/o this if
+      //       double diff_lev = (bins[i].first - bins[p1].first) / (i - p1);
+      //       for (int j = p1 + 1; j < i; j++)
+      //         bins[j].first = (j - p1) * diff_lev + bins[p1].first;
+      //     }
+      //     p1 = i;
+      //   }
+      //   if (bins[i].second >= 0) {
+      //     if (i - p2 > 1) {
+      //       double diff_lev = (bins[i].second - bins[p2].second) / (i - p2);
+      //       for (int j = p2 + 1; j < i; j++)
+      //         bins[j].second = (j - p2) * diff_lev + bins[p2].second;
+      //     }
+      //     p2 = i;
+      //   }
+      // }
 
       // // add
       for (int i = 0; i < cfg.half_strip_num_; i++) {
         strip_width_.emplace_back(bins[i].first + bins[cfg.half_strip_num_ - 1 - i].second);
       }
-*/
+      */
 
     }
 
@@ -271,16 +271,16 @@ struct ContourView {
 
 
   // TODO: 3. return true if two contours can be accepted as from the same heatmap peak
-  //  use normalized L2E as similarity score?
+  // use normalized L2E as similarity score?
   // This is one of the checks for consensus (distributional), the other one is constellation
   // T_tgt = T_delta * T_src
-//  static std::pair<Eigen::Isometry2d, bool> checkCorresp(const ContourView &cont_src, const ContourView &cont_tgt) {
+  // static std::pair<Eigen::Isometry2d, bool> checkCorresp(const ContourView &cont_src, const ContourView &cont_tgt) {
   static bool checkSim(const ContourView &cont_src, const ContourView &cont_tgt,
                        const ContourSimThresConfig &simthres) {
-//                       const ContourSimThresConfig &simthres = ContourSimThresConfig()) {
+                      //  const ContourSimThresConfig &simthres = ContourSimThresConfig()) {
     // very loose
     // TODO: more rigorous criteria (fewer branch, faster speed)
-//    std::pair<Eigen::Isometry2d, bool> ret(Eigen::Isometry2d(), false);
+    // std::pair<Eigen::Isometry2d, bool> ret(Eigen::Isometry2d(), false);
     bool ret = false;
     // 1. area, 2.3. eig, 4. com;
     if (diff_perc<float>(cont_src.cell_cnt_, cont_tgt.cell_cnt_, simthres.tp_cell_cnt)
@@ -354,13 +354,13 @@ struct ContourView {
   }
 
   // getter setter
-//  int getArea() const {
-//    return cell_cnt_;
-//  }
+  // int getArea() const {
+  //   return cell_cnt_;
+  // }
 
-//  void addChildren(std::shared_ptr<ContourView> &chd) {
-//    children_.push_back(chd);
-//  }
+  // void addChildren(std::shared_ptr<ContourView> &chd) {
+  //   children_.push_back(chd);
+  // }
 
   // auxiliary functions
   // 1. get the position of all contour pixels
@@ -368,10 +368,10 @@ struct ContourView {
     return {};
   }
 
-//  // 2. visualize contour/slice
-//  void displayContour(const std::string &fpath) const {
-//
-//  }
+  // // 2. visualize contour/slice
+  // void displayContour(const std::string &fpath) const {
+
+  // }
 
   inline M2F getManualCov() const {
     return eig_vecs_ * eig_vals_.asDiagonal() * eig_vecs_.transpose();

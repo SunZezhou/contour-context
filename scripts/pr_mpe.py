@@ -208,6 +208,6 @@ def main(fp_gt_sens_poses, fp_outcome):
 
 
 if __name__ == "__main__":
-    file_gt_sens_poses = "/home/szz/Documents/contour-context/results/ts-sens_pose-kitti08.txt"
-    file_outcome = "/home/szz/Documents/contour-context/results/outcome_txt/outcome-kitti08.txt"
+    file_gt_sens_poses = "/home/szz/Documents/contour-context/test/ts-sens_pose-kitti.txt"
+    file_outcome = "/home/szz/Documents/contour-context/test/outcome-kitti.txt"
     main(file_gt_sens_poses, file_outcome)

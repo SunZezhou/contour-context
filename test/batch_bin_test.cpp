@@ -11,9 +11,6 @@
 #include "tools/bm_util.h"
 #include "tools/config_handler.h"
 
-# define PUB_ROS_MSG 1
-# define SAVE_MID_FILE 1
-
 const std::string PROJ_DIR = std::string(PJSRCDIR);
 
 SequentialTimeProfiler stp;
@@ -46,11 +43,12 @@ public:
     std::string fpath_sens_gt_pose, fpath_lidar_bins;
     double corr_thres;
 
-    yl.loadOneConfig({"fpath_sens_gt_pose"}, fpath_sens_gt_pose);
-    yl.loadOneConfig({"fpath_lidar_bins"}, fpath_lidar_bins);
-    yl.loadOneConfig({"correlation_thres"}, corr_thres);
-    ptr_evaluator = std::make_unique<ContLCDEvaluator>(fpath_sens_gt_pose, fpath_lidar_bins, corr_thres);
-
+    yl.loadOneConfig({"fpath_sens_gt_pose"}, fpath_sens_gt_pose);   // gt pose
+    yl.loadOneConfig({"fpath_lidar_bins"}, fpath_lidar_bins);       // correspond LiDAR bin
+    yl.loadOneConfig({"correlation_thres"}, corr_thres);            // maybe smallest score with other LiDAR bin
+    // 1. read gt_pose, 2. read bins, 3. pair gt_pose and bins by latest timestamps, 4. gt_loopclosure as 5m in 3D  5. seems no need corr_thres
+    ptr_evaluator = std::make_unique<ContLCDEvaluator>(fpath_sens_gt_pose, fpath_lidar_bins, corr_thres); 
+                                                                    
     yl.loadOneConfig({"ContourDBConfig", "nnk_"}, db_config.nnk_);
     yl.loadOneConfig({"ContourDBConfig", "max_fine_opt_"}, db_config.max_fine_opt_);
     yl.loadSeqConfig({"ContourDBConfig", "q_levels_"}, db_config.q_levels_);
@@ -130,6 +128,7 @@ public:
 
     stp.lap();
     stp.start();
+    // 从laser_info_中提取contour, 二者seq对应
     std::shared_ptr<ContourManager> ptr_cm_tgt = ptr_evaluator->getCurrContourManager(cm_config);
     stp.record("make bev");
     const auto laser_info_tgt = ptr_evaluator->getCurrScanInfo();
@@ -144,7 +143,7 @@ public:
     time_translate = time_translate * (ts_curr - ts_beg) / 60;  // 10m per min
     g_poses.insert(std::make_pair(laser_info_tgt.seq, GlobalPoseInfo(T_gt_curr, time_translate.z())));
 
-#if PUB_ROS_MSG
+    #if PUB_ROS_MSG
     geometry_msgs::TransformStamped tf_gt_curr = tf2::eigenToTransform(T_gt_curr);
     broadcastCurrPose(tf_gt_curr);  // the stamp is now
 
@@ -153,11 +152,11 @@ public:
     publishPath(wall_time_ros, tf_gt_curr);
     if (laser_info_tgt.seq % 50 == 0)  // It is laggy to display too many characters in rviz
       publishScanSeqText(wall_time_ros, tf_gt_curr, laser_info_tgt.seq);
-#endif
+    #endif
 
     // 1.2. save images of layers
 
-#if SAVE_MID_FILE
+    #if SAVE_MID_FILE
     clk.tic();
     for (int i = 0; i < cm_config.lv_grads_.size(); i++) {
       std::string f_name = PROJ_DIR + "/results/layer_img/contour_" + "lv" + std::to_string(i) + "_" +
@@ -165,7 +164,7 @@ public:
       ptr_cm_tgt->saveContourImage(f_name, i);
     }
     std::cout << "Time save layers: " << clk.toctic() << std::endl;
-#endif
+    #endif
     ptr_cm_tgt->clearImage();  // a must to save memory
 
     // 2. query
@@ -179,9 +178,9 @@ public:
     ptr_contour_db->queryRangedKNN(ptr_cm_tgt, thres_lb_, thres_ub_, ptr_cands, cand_corr, bev_tfs);
     printf("%lu Candidates in %7.5fs: \n", ptr_cands.size(), clk.toc());
 
-//    if(laser_info_tgt.seq == 894){
-//      printf("Manual break point here.\n");
-//    }
+    // if(laser_info_tgt.seq == 894){
+    //   printf("Manual break point here.\n");
+    // }
 
     // 2.1 process query results
     CHECK(ptr_cands.size() < 2);
@@ -193,14 +192,14 @@ public:
       if (pred_res.tfpn == PredictionOutcome::TP || pred_res.tfpn == PredictionOutcome::FP) {
         new_lc_pairs.emplace_back(ptr_cm_tgt->getIntID(), ptr_cands[0]->getIntID());
         new_lc_tfp.emplace_back(pred_res.tfpn == PredictionOutcome::TP);
-#if SAVE_MID_FILE
+        #if SAVE_MID_FILE
         // save images of pairs
         std::string f_name =
             PROJ_DIR + "/results/match_comp_img/lc_" + ptr_cm_tgt->getStrID() + "-" + ptr_cands[0]->getStrID() +
             ".png";
         ContourManager::saveMatchedPairImg(f_name, *ptr_cm_tgt, *ptr_cands[0]);
         printf("Image saved: %s-%s\n", ptr_cm_tgt->getStrID().c_str(), ptr_cands[0]->getStrID().c_str());
-#endif
+        #endif
       }
     }
 
@@ -238,10 +237,10 @@ public:
     stp.record("Update database");
     printf("Rebalance tree cost: %7.5f\n", clk.toc());
 
-#if PUB_ROS_MSG
+    #if PUB_ROS_MSG
     // 4. publish new vis
     publishLCConnections(new_lc_pairs, new_lc_tfp, wall_time_ros);
-#endif
+    #endif
 
     return 0;
   }
@@ -268,7 +267,7 @@ int main(int argc, char **argv) {
   printf("batch bin test start\n");
 
   // Check thres path
-//  std::string cand_score_config = PROJ_DIR + "/config/score_thres_kitti_bag_play.cfg";
+  // std::string cand_score_config = PROJ_DIR + "/config/score_thres_kitti_bag_play.cfg";
   std::string cand_score_config = "/home/szz/Documents/contour-context/src/contour-context/config/batch_bin_test_config.yaml";
 
   // Main process:

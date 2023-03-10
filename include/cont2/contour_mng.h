@@ -236,7 +236,7 @@ union ConstellationPair {  // given a pair of ContourManager, this records the s
 };
 
 //! binary constellation identity
-struct BCI { //binary constellation identity
+struct BCI { // binary constellation identity
   //! a point/star of the constellation seen from an anchor contour
   union RelativePoint {
     struct {
@@ -250,7 +250,7 @@ struct BCI { //binary constellation identity
 
     RelativePoint(int8_t l, int8_t a, int16_t b, float f1, float f2) : level(l), seq(a), bit_pos(b), r(f1), theta(f2) {}
 
-//    RelativePoint() = default;
+    // RelativePoint() = default;
   };
 
   //! potential pairs from 2 constellations that passed the dist check
@@ -268,7 +268,7 @@ struct BCI { //binary constellation identity
 
   // Four member variable
   std::bitset<BITS_PER_LAYER * NUM_BIN_KEY_LAYER> dist_bin_;
-//  std::map<u_int16_t, std::vector<RelativePoint>> dist_bit_neighbors_;  // {bit position in the bit vector: [neighbours point info, ...]}
+  // std::map<u_int16_t, std::vector<RelativePoint>> dist_bit_neighbors_;  // {bit position in the bit vector: [neighbours point info, ...]}
   std::vector<RelativePoint> nei_pts_;
   std::vector<uint16_t> nei_idx_segs_;  // index in the `nei_pts_`, [seg[i], seg[i+1]) is a segment with the same dist bit set.
   int8_t piv_seq_, level_;  // level and seq of the anchor/pivot
@@ -507,13 +507,15 @@ public:
     std::map<int, Pixelf> tmp_pillars;
     // Downsample before using?
     for (const auto &pt: ptr_gapc->points) {
+      // project pointcloud to image, seems no hash
       std::pair<int, int> rc = hashPointToImage<PointType>(pt);
       if (rc.first > 0) {
         float height = cfg_.lidar_height_ + pt.z;
+        // bev_ 记录最大高度
         if (bev_(rc.first, rc.second) < height) {
           bev_(rc.first, rc.second) = height;
           V2F coor_f = pointToContRowCol(V2F(pt.x, pt.y));  // same coord as row and col
-//          pillar_pos2f_[rc.first * cfg_.n_col_ + rc.second] = coor_f;
+        //  pillar_pos2f_[rc.first * cfg_.n_col_ + rc.second] = coor_f;
           tmp_pillars[rc.first * cfg_.n_col_ + rc.second] = Pixelf(coor_f.x(), coor_f.y(), height);
 
         }
@@ -525,8 +527,8 @@ public:
     bev_pixfs_.insert(bev_pixfs_.begin(), tmp_pillars.begin(), tmp_pillars.end());
     std::cout << "Time makebev: " << clk.toc() << std::endl;
 
-//    bev_pixfs_.shrink_to_fit();
-//    std::sort(bev_pixfs_.begin(), bev_pixfs_.end());  // std::map is ordered by definition
+    // bev_pixfs_.shrink_to_fit();
+    // std::sort(bev_pixfs_.begin(), bev_pixfs_.end());  // std::map is ordered by definition
 
     printf("Max/Min bin height: %f %f\n", max_bin_val_, min_bin_val_);
     if (!str_id.empty())
@@ -534,17 +536,17 @@ public:
     else
       str_id_ = std::to_string(ptr_gapc->header.stamp);
 
-//    printf("Continuous Pos size: %lu\n", pillar_pos2f_.size());
+    // printf("Continuous Pos size: %lu\n", pillar_pos2f_.size());
     printf("Continuous Pos size: %lu\n", bev_pixfs_.size());
 
-//    size_t sizeInBytes = bev_.total() * bev_.elemSize();
-//    std::cout << "bev size byte: " << sizeInBytes<< std::endl;
+    // size_t sizeInBytes = bev_.total() * bev_.elemSize();
+    // std::cout << "bev size byte: " << sizeInBytes<< std::endl;
 
 #if SAVE_MID_FILE
     cv::Mat mask, view;
     inRange(bev_, cv::Scalar::all(0), cv::Scalar::all(max_bin_val_), mask);
-//    inRange(bev_, cv::Scalar::all(0), cv::Scalar::all(5.0), mask);  // NOTE: set to a fixed max height for uniformity
-//    CHECK_GT(5.0, cfg_.lv_grads_.back());
+    // inRange(bev_, cv::Scalar::all(0), cv::Scalar::all(5.0), mask);  // NOTE: set to a fixed max height for uniformity
+    // CHECK_GT(5.0, cfg_.lv_grads_.back());
     normalize(bev_, view, 0, 255, cv::NORM_MINMAX, -1, mask);
     std::string dir = std::string(PJSRCDIR) + "/results/bev_img/";
     cv::imwrite(dir + "cart_context-" + str_id_ + ".png", view);
@@ -585,9 +587,11 @@ public:
     cv::Rect full_bev_roi(0, 0, bev_.cols, bev_.rows);
 
     TicToc clk;
+    // 在0-5层中，1. 用cv::threshold标出高于1.5米的像素，2. 用connectedComponentsWithStats获得每个区域的axis-aligned boundingbox (rect),
+    // 3. 在每个bbx中统计像素/质心等论文中参数
     makeContourRecursiveHelper(full_bev_roi, cv::Mat1b(1, 1), 0, nullptr);
     std::cout << "Time makecontour: " << clk.toc() << std::endl;
-
+    // sort contour in each level by bigger first
     for (int ll = 0; ll < cont_views_.size(); ll++) {
       std::sort(cont_views_[ll].begin(), cont_views_[ll].end(),
                 [&](const std::shared_ptr<ContourView> &p1, const std::shared_ptr<ContourView> &p2) -> bool {
@@ -600,97 +604,97 @@ public:
 
       cont_perc_[ll].reserve(cont_views_[ll].size());
       for (int j = 0; j < cont_views_[ll].size(); j++) {
-        cont_perc_[ll].push_back(cont_views_[ll][j]->cell_cnt_ * 1.0f / layer_cell_cnt_[ll]);
+        cont_perc_[ll].push_back(cont_views_[ll][j]->cell_cnt_ * 1.0f / layer_cell_cnt_[ll]);  //  why not emplace_back?
       }
     }
 
-//    /// exp: find centers and calculate SURF at these places. Format: cv::Point (e.g. cv::x, cv::y)
-//    for (int i = 0; i < std::min(10, (int) cont_views_[1].size()); i++) {
-//      printf("%7.4f, %7.4f,\n", cont_views_[1][i]->pos_mean_.y(), cont_views_[1][i]->pos_mean_.x());
-//    }
+    // /// exp: find centers and calculate SURF at these places. Format: cv::Point (e.g. cv::x, cv::y)
+    // for (int i = 0; i < std::min(10, (int) cont_views_[1].size()); i++) {
+    //   printf("%7.4f, %7.4f,\n", cont_views_[1][i]->pos_mean_.y(), cont_views_[1][i]->pos_mean_.x());
+    // }
 
-    /// make retrieval keys
-//    // case 1: traditional key making: from top-two sized contours
-//    const int id_firsts = 4; // combination of the first # will be permuated to calculate keys
-//    for (int ll = 0; ll < cfg_.lv_grads_.size(); ll++) {
-//      for (int id0 = 0; id0 < id_firsts; id0++) {
-//        for (int id1 = id0 + 1; id1 < id_firsts; id1++) {
-//          RetrievalKey key;
-//          key.setZero();
-//          if (cont_views_[ll].size() > id1 && cont_views_[ll][id0]->cell_cnt_ > cfg_.cont_cnt_thres_ &&
-//              cont_views_[ll][id1]->cell_cnt_ > cfg_.cont_cnt_thres_) { // TODO: make multiple keys for each level
-//
-//            if (RET_KEY_DIM == 6) {
-//              // key dim = 6
-//              key(0) = std::sqrt(cont_views_[ll][id0]->cell_cnt_);
-//              key(1) = std::sqrt(cont_views_[ll][id1]->cell_cnt_);
-//              V2D cc_line = cont_views_[ll][id0]->pos_mean_ - cont_views_[ll][id1]->pos_mean_;
-//              key(2) = cc_line.norm();
-//
-//              // distribution of projection perp to cc line
-//              cc_line.normalize();
-//              V2D cc_perp(-cc_line.y(), cc_line.x());
-//
-////        // case1: use cocentic distribution
-////        M2D new_cov = (cont_views_[ll][id0]->getManualCov() * (cont_views_[ll][id0]->cell_cnt_ - 1) +
-////                       cont_views_[ll][id1]->getManualCov() * (cont_views_[ll][id1]->cell_cnt_ - 1)) /
-////                      (cont_views_[ll][id0]->cell_cnt_ + cont_views_[ll][id1]->cell_cnt_ - 1);
-//              // case2: use relative translation preserving distribution
-//              M2D new_cov = ContourView::addContourStat(*cont_views_[ll][id0], *cont_views_[ll][id1]).getManualCov();
-//
-//              key(3) = std::sqrt(cc_perp.transpose() * new_cov * cc_perp);
-//
-//              // distribution of projection to cc line
-//              key(4) = std::sqrt(cc_line.transpose() * new_cov * cc_line);
-//
-//              // the max eigen value of the first ellipse
-//              key(5) = std::sqrt(cont_views_[ll][id0]->eig_vals_(1));
-//            } else if (RET_KEY_DIM == 11) {
-//              // key dim = 11
-//              V2D cc_line = cont_views_[ll][id0]->pos_mean_ - cont_views_[ll][id1]->pos_mean_;
-//              key(0) = cc_line.norm();
-//
-//              // the max eigen value of the first ellipse
-//              key(1) = std::sqrt(cont_views_[ll][id0]->eig_vals_(1));
-//              key(2) = std::sqrt(cont_views_[ll][id1]->eig_vals_(1));
-//
-//              // the strip descriptors
-//              for (int i = 0; i < 4; i++) {
-//                key(3 + i * 2) = cont_views_[ll][id0]->strip_width_[i];
-//                key(3 + i * 2 + 1) = cont_views_[ll][id1]->strip_width_[i];
-//              }
-//            } else if (RET_KEY_DIM == 9) {
-//              // key dim = 9
-//              V2D cc_line = cont_views_[ll][id0]->pos_mean_ - cont_views_[ll][id1]->pos_mean_;
-//              key(0) = cc_line.norm();
-//
-//              // the max eigen value of the first ellipse
-//              // the strip descriptors, area
-//              for (int i = 0; i < 4; i++) {
-//                key(1 + i * 2) =
-//                    cont_views_[ll][id0]->strip_width_[i] * std::sqrt(cont_views_[ll][id0]->eig_vals_(1)) / 4;
-//                key(1 + i * 2 + 1) =
-//                    cont_views_[ll][id1]->strip_width_[i] * std::sqrt(cont_views_[ll][id1]->eig_vals_(1)) / 4;
-//              }
-//            }
-//
-//          }
-//
-//
-//          layer_keys_[ll].emplace_back(key);
-//        }
-//      }
-//    }
+    // // make retrieval keys
+    // // case 1: traditional key making: from top-two sized contours
+    // const int id_firsts = 4; // combination of the first # will be permuated to calculate keys
+    // for (int ll = 0; ll < cfg_.lv_grads_.size(); ll++) {
+    //   for (int id0 = 0; id0 < id_firsts; id0++) {
+    //     for (int id1 = id0 + 1; id1 < id_firsts; id1++) {
+    //       RetrievalKey key;
+    //       key.setZero();
+    //       if (cont_views_[ll].size() > id1 && cont_views_[ll][id0]->cell_cnt_ > cfg_.cont_cnt_thres_ &&
+    //           cont_views_[ll][id1]->cell_cnt_ > cfg_.cont_cnt_thres_) { // TODO: make multiple keys for each level
+
+    //         if (RET_KEY_DIM == 6) {
+    //           // key dim = 6
+    //           key(0) = std::sqrt(cont_views_[ll][id0]->cell_cnt_);
+    //           key(1) = std::sqrt(cont_views_[ll][id1]->cell_cnt_);
+    //           V2D cc_line = cont_views_[ll][id0]->pos_mean_ - cont_views_[ll][id1]->pos_mean_;
+    //           key(2) = cc_line.norm();
+
+    //           // distribution of projection perp to cc line
+    //           cc_line.normalize();
+    //           V2D cc_perp(-cc_line.y(), cc_line.x());
+
+    //           // // case1: use cocentic distribution
+    //           // M2D new_cov = (cont_views_[ll][id0]->getManualCov() * (cont_views_[ll][id0]->cell_cnt_ - 1) +
+    //           //                 cont_views_[ll][id1]->getManualCov() * (cont_views_[ll][id1]->cell_cnt_ - 1)) /
+    //           //               (cont_views_[ll][id0]->cell_cnt_ + cont_views_[ll][id1]->cell_cnt_ - 1);
+    //           // case2: use relative translation preserving distribution
+    //           M2D new_cov = ContourView::addContourStat(*cont_views_[ll][id0], *cont_views_[ll][id1]).getManualCov();
+
+    //           key(3) = std::sqrt(cc_perp.transpose() * new_cov * cc_perp);
+
+    //           // distribution of projection to cc line
+    //           key(4) = std::sqrt(cc_line.transpose() * new_cov * cc_line);
+
+    //           // the max eigen value of the first ellipse
+    //           key(5) = std::sqrt(cont_views_[ll][id0]->eig_vals_(1));
+    //         } else if (RET_KEY_DIM == 11) {
+    //           // key dim = 11
+    //           V2D cc_line = cont_views_[ll][id0]->pos_mean_ - cont_views_[ll][id1]->pos_mean_;
+    //           key(0) = cc_line.norm();
+
+    //           // the max eigen value of the first ellipse
+    //           key(1) = std::sqrt(cont_views_[ll][id0]->eig_vals_(1));
+    //           key(2) = std::sqrt(cont_views_[ll][id1]->eig_vals_(1));
+
+    //           // the strip descriptors
+    //           for (int i = 0; i < 4; i++) {
+    //             key(3 + i * 2) = cont_views_[ll][id0]->strip_width_[i];
+    //             key(3 + i * 2 + 1) = cont_views_[ll][id1]->strip_width_[i];
+    //           }
+    //         } else if (RET_KEY_DIM == 9) {
+    //           // key dim = 9
+    //           V2D cc_line = cont_views_[ll][id0]->pos_mean_ - cont_views_[ll][id1]->pos_mean_;
+    //           key(0) = cc_line.norm();
+
+    //           // the max eigen value of the first ellipse
+    //           // the strip descriptors, area
+    //           for (int i = 0; i < 4; i++) {
+    //             key(1 + i * 2) =
+    //                 cont_views_[ll][id0]->strip_width_[i] * std::sqrt(cont_views_[ll][id0]->eig_vals_(1)) / 4;
+    //             key(1 + i * 2 + 1) =
+    //                 cont_views_[ll][id1]->strip_width_[i] * std::sqrt(cont_views_[ll][id1]->eig_vals_(1)) / 4;
+    //           }
+    //         }
+
+    //       }
+    
+    //       layer_keys_[ll].emplace_back(key);
+    //     }
+    //   }
+    // }
 
     /// case 2: new key making: from a pivot contour
     const int piv_firsts = 6;
     const int dist_firsts = 10;
     const float roi_radius = 10.0f;
     const int roi_radius_padded = std::ceil(roi_radius + 1);
+    // 两个for表示在每一层中提取6个锚点，也就是6个特征点
     for (int ll = 0; ll < cfg_.lv_grads_.size(); ll++) {
-//      cv::Mat mask;
-//      cv::threshold(bev_, mask, cfg_.lv_grads_[ll], 123,
-//                    cv::THRESH_TOZERO); // mask is same type and dimension as bev_
+      // cv::Mat mask;
+      // cv::threshold(bev_, mask, cfg_.lv_grads_[ll], 123,
+      //               cv::THRESH_TOZERO); // mask is same type and dimension as bev_
       int accumulate_cell_cnt = 0;
       for (int seq = 0; seq < piv_firsts; seq++) {
         RetrievalKey key;
@@ -700,7 +704,7 @@ public:
 
         if (cont_views_[ll].size() > seq)
           accumulate_cell_cnt += cont_views_[ll][seq]->cell_cnt_;
-
+        // 因为前面对从cont_view排过序了，这里就是按面积从大到小选
         if (cont_views_[ll].size() > seq && cont_views_[ll][seq]->cell_cnt_ >= cfg_.min_cont_key_cnt_) {
 
           V2F v_cen = cont_views_[ll][seq]->pos_mean_.cast<float>();
@@ -721,16 +725,16 @@ public:
 
           RunningStatRecorder rec_tmp; // for case 3
 
-//          // Get data for visualization: (for data to draw plots in paper) paper data (1/3)
-//          bool vis_data = (ll == 2 && seq == 0 && int_id_ == 1648);
-//          if (vis_data) { printf("\n=== vis: \n"); }
-//          std::vector<KeyFloatType> dense_divs(140, 0);
-//          KeyFloatType ddiv_len = roi_radius / (140);
+          // // Get data for visualization: (for data to draw plots in paper) paper data (1/3)
+          // bool vis_data = (ll == 2 && seq == 0 && int_id_ == 1648);
+          // if (vis_data) { printf("\n=== vis: \n"); }
+          // std::vector<KeyFloatType> dense_divs(140, 0);
+          // KeyFloatType ddiv_len = roi_radius / (140);
 
-
+          // 固定搜索范围，而没有使用cont_views_[ll][seq]的bounding box, why？
           for (int rr = r_min; rr <= r_max; rr++) {
             for (int cc = c_min; cc <= c_max; cc++) {
-//              if (bev_(rr, cc) < cfg_.lv_grads_[ll])
+              // if (bev_(rr, cc) < cfg_.lv_grads_[ll])
               if (bev_(rr, cc) < cfg_.lv_grads_[DIST_BIN_LAYERS[0]])  // NOTE: new key
                 continue;
 
@@ -738,117 +742,118 @@ public:
               std::pair<int, Pixelf> sear_res = search_vec<Pixelf>(bev_pixfs_, 0, bev_pixfs_.size() - 1,
                                                                    q_hash);
               DCHECK_EQ(sear_res.first, q_hash);
+              // 每个高于level的像素到中心的距离
               KeyFloatType dist = (V2F(sear_res.second.row_f, sear_res.second.col_f) - v_cen).norm();
 
-//              KeyFloatType dist = (pillar_pos2f_.at(rr * cfg_.n_col_ + cc) - v_cen).norm();
+              // KeyFloatType dist = (pillar_pos2f_.at(rr * cfg_.n_col_ + cc) - v_cen).norm();
 
               // case 1: ring, height, 7
-//              if (dist < roi_radius - 1e-2 && bev_(rr, cc) > cfg_.lv_grads_[0]) {  // add gaussian to bins
-//                int bin_idx = int(dist / bin_len);
-//                ring_bins[bin_idx] += bev_(rr, cc);    // no gaussian
-//              }
+              // if (dist < roi_radius - 1e-2 && bev_(rr, cc) > cfg_.lv_grads_[0]) {  // add gaussian to bins
+              //   int bin_idx = int(dist / bin_len);
+              //   ring_bins[bin_idx] += bev_(rr, cc);    // no gaussian
+              // }
 
-              // case 2: gmm, normalized
+              // case 2: gmm, normalized 对于每个像素，如果同样高于其他level， 统计跨level数量
               if (dist < roi_radius - 1e-2 && bev_(rr, cc) > cfg_.lv_grads_[DIST_BIN_LAYERS[0]]) { // imprv key variance
-//                int higher_cnt = 1; // number of levels spanned by this pixel
-//                for (int ele = ll + 1; ele < cfg_.lv_grads_.size(); ele++)
+                // int higher_cnt = 1; // number of levels spanned by this pixel
+                // for (int ele = ll + 1; ele < cfg_.lv_grads_.size(); ele++)
                 int higher_cnt = 0;
                 for (int ele = DIST_BIN_LAYERS[0]; ele < cfg_.lv_grads_.size(); ele++)
                   if (bev_(rr, cc) > cfg_.lv_grads_[ele])
                     higher_cnt++;
-
+                // 高斯化
                 cnt_point++;
                 for (int div_idx = 0; div_idx < num_bins * div_per_bin; div_idx++)
                   discrete_divs[div_idx] +=
                       higher_cnt * gaussPDF<KeyFloatType>(div_idx * div_len + 0.5 * div_len, dist, 1.0);
 
-//                if (vis_data) {  // paper data (2/3)
-//                  printf("discrete: %f %d %f\n", dist, higher_cnt, bev_(rr, cc));
-//                  for (int ddiv_idx = 0; ddiv_idx < dense_divs.size(); ddiv_idx++)
-//                    dense_divs[ddiv_idx] +=
-//                        higher_cnt * gaussPDF<KeyFloatType>(ddiv_idx * ddiv_len + 0.5 * ddiv_len, dist, 1.0);
-//                }
+                // if (vis_data) {  // paper data (2/3)
+                //   printf("discrete: %f %d %f\n", dist, higher_cnt, bev_(rr, cc));
+                //   for (int ddiv_idx = 0; ddiv_idx < dense_divs.size(); ddiv_idx++)
+                //     dense_divs[ddiv_idx] +=
+                //         higher_cnt * gaussPDF<KeyFloatType>(ddiv_idx * ddiv_len + 0.5 * ddiv_len, dist, 1.0);
+                // }
               }
 
-//              // case 3: using another ellipse
-//              if (dist < roi_radius - 1e-2 && bev_(rr, cc) > cfg_.lv_grads_[ll]) {
-//                auto pos2f = pillar_pos2f_.at(rr * cfg_.n_col_ + cc);
-//                rec_tmp.runningStatsF(pos2f.x(), pos2f.y(), bev_(rr, cc));
-//              }
+              // // case 3: using another ellipse
+              // if (dist < roi_radius - 1e-2 && bev_(rr, cc) > cfg_.lv_grads_[ll]) {
+              //   auto pos2f = pillar_pos2f_.at(rr * cfg_.n_col_ + cc);
+              //   rec_tmp.runningStatsF(pos2f.x(), pos2f.y(), bev_(rr, cc));
+              // }
 
             }
           }
 
-//          if (vis_data) {  // paper data (3/3)
-//            for (auto dense_div_dat: dense_divs)
-//              printf("%f,", dense_div_dat);
-//          }
-//          if (vis_data) { printf("\nend vis ===\n"); }
+          // if (vis_data) {  // paper data (3/3)
+          //   for (auto dense_div_dat: dense_divs)
+          //     printf("%f,", dense_div_dat);
+          // }
+          // if (vis_data) { printf("\nend vis ===\n"); }
 
-
+          // 上采样，由discrete_divs合成ring_bins
           // case 2: gmm, normalized
           for (int b = 0; b < num_bins; b++) {
             for (int d = 0; d < div_per_bin; d++) {
               ring_bins[b] += discrete_divs[b * div_per_bin + d];
             }
             ring_bins[b] *= bin_len / std::sqrt(cnt_point);
-//            ring_bins[b] *= bin_len;  // almost no performance degradation compared with the above one
+            // ring_bins[b] *= bin_len;  // almost no performance degradation compared with the above one
           }
 
-//          // case 3: using another ellipse
-//          ContourView cv_tmp(ll, 0, 0, nullptr); // for case 3
-//          cv_tmp.calcStatVals(rec_tmp);
+          // // case 3: using another ellipse
+          // ContourView cv_tmp(ll, 0, 0, nullptr); // for case 3
+          // cv_tmp.calcStatVals(rec_tmp);
 
 
 
           // TODO: make the key generation from one contour more distinctive
-//          key(0) = std::sqrt(cont_views_[ll][seq]->eig_vals_(1));  // max eigen value
-//          key(1) = std::sqrt(cont_views_[ll][seq]->eig_vals_(0));  // min eigen value
-//          key(2) = (cont_views_[ll][seq]->pos_mean_ - cont_views_[ll][seq]->com_).norm();
+          // key(0) = std::sqrt(cont_views_[ll][seq]->eig_vals_(1));  // max eigen value
+          // key(1) = std::sqrt(cont_views_[ll][seq]->eig_vals_(0));  // min eigen value
+          // key(2) = (cont_views_[ll][seq]->pos_mean_ - cont_views_[ll][seq]->com_).norm();
 
           key(0) =
               std::sqrt(cont_views_[ll][seq]->eig_vals_(1) * cont_views_[ll][seq]->cell_cnt_);  // max eigen value * cnt
           key(1) =
               std::sqrt(cont_views_[ll][seq]->eig_vals_(0) * cont_views_[ll][seq]->cell_cnt_);  // min eigen value * cnt
-//          key(2) = (cont_views_[ll][seq]->pos_mean_ - cont_views_[ll][seq]->com_).norm() *
-//                   std::sqrt(cont_views_[ll][seq]->cell_cnt_);
-//                   (cont_views_[ll][seq]->cell_cnt_);
+          // key(2) = (cont_views_[ll][seq]->pos_mean_ - cont_views_[ll][seq]->com_).norm() *
+          //           std::sqrt(cont_views_[ll][seq]->cell_cnt_);
+          //           (cont_views_[ll][seq]->cell_cnt_);
           key(2) = std::sqrt(accumulate_cell_cnt);
 
 
           // case 1,2:
           DCHECK_EQ(num_bins + 3, RET_KEY_DIM);
           for (int nb = 0; nb < num_bins; nb++) {
-//            key(3 + nb) = ring_bins[nb];
-//            key(3 + nb) = ring_bins[nb] / (M_PI * (2 * nb + 1) * bin_len);  // density on the ring
+            // key(3 + nb) = ring_bins[nb];
+            // key(3 + nb) = ring_bins[nb] / (M_PI * (2 * nb + 1) * bin_len);  // density on the ring
             key(3 + nb) = ring_bins[nb];  // case 2.1: count on the ring
-//            key(3 + nb) = ring_bins[nb] / (2 * nb + 1);  // case 2.2: kind of density on the ring
+            // key(3 + nb) = ring_bins[nb] / (2 * nb + 1);  // case 2.2: kind of density on the ring
           }
 
-//          // case 3:
-//          key(3) = std::sqrt(cont_views_[ll][seq]->cell_cnt_);
-//
-//          key(4) = std::sqrt(cv_tmp.eig_vals_(1) * cv_tmp.cell_cnt_);
-//          key(5) = std::sqrt(cv_tmp.eig_vals_(0) * cv_tmp.cell_cnt_);
-//          key(6) = (cv_tmp.pos_mean_ - cv_tmp.com_).norm() * cv_tmp.cell_cnt_;
-//          key(7) = std::sqrt(cv_tmp.cell_cnt_);
-//
-//          V2D cc_line = cont_views_[ll][seq]->pos_mean_ - cv_tmp.pos_mean_;
-//          key(8) = cc_line.norm();
-//          key(9) = std::sqrt(std::abs(cv_tmp.cell_cnt_ - cont_views_[ll][seq]->cell_cnt_));
+          // // case 3:
+          // key(3) = std::sqrt(cont_views_[ll][seq]->cell_cnt_);
+
+          // key(4) = std::sqrt(cv_tmp.eig_vals_(1) * cv_tmp.cell_cnt_);
+          // key(5) = std::sqrt(cv_tmp.eig_vals_(0) * cv_tmp.cell_cnt_);
+          // key(6) = (cv_tmp.pos_mean_ - cv_tmp.com_).norm() * cv_tmp.cell_cnt_;
+          // key(7) = std::sqrt(cv_tmp.cell_cnt_);
+
+          // V2D cc_line = cont_views_[ll][seq]->pos_mean_ - cv_tmp.pos_mean_;
+          // key(8) = cc_line.norm();
+          // key(9) = std::sqrt(std::abs(cv_tmp.cell_cnt_ - cont_views_[ll][seq]->cell_cnt_));
 
 
-
+          // 为每个锚点/特征点构建描述符，好像只有1-4层，是足够了吗？or 再高特征就不足了
           // hash dists and angles of the neighbours around the anchor/pivot to bit keys
           // hard coded
           for (int bl = 0; bl < NUM_BIN_KEY_LAYER; bl++) {
             int bit_offset = bl * BITS_PER_LAYER;
             for (int j = 0; j < std::min(dist_firsts, (int) cont_views_[DIST_BIN_LAYERS[bl]].size()); j++) {
-              if (ll != DIST_BIN_LAYERS[bl] || j != seq) {
-                V2F vec_cc =
+              if (ll != DIST_BIN_LAYERS[bl] || j != seq) {  // 不要同一层的？
+                V2F vec_cc =  //  到锚点距离
                     cont_views_[DIST_BIN_LAYERS[bl]][j]->pos_mean_ - cont_views_[ll][seq]->pos_mean_;
                 float tmp_dist = vec_cc.norm();
-
+                // 这些数字哪来的？
                 if (tmp_dist > (BITS_PER_LAYER - 1) * 1.01 + 5.43 - 1e-3 // the last bit of layer sector is always 0
                     || tmp_dist <= 5.43)  // TODO: nonlinear mapping?
                   continue;
@@ -857,12 +862,12 @@ public:
                 int dist_idx = std::min(std::floor((tmp_dist - 5.43) / 1.01), BITS_PER_LAYER - 1.0) + bit_offset;
                 DCHECK_LT(dist_idx, BITS_PER_LAYER * NUM_BIN_KEY_LAYER);
                 bci.dist_bin_.set(dist_idx, true);
-//                bci.dist_bit_neighbors_[dist_idx].emplace_back(DIST_BIN_LAYERS[bl], j, tmp_dist, tmp_orie);
+                // bci.dist_bit_neighbors_[dist_idx].emplace_back(DIST_BIN_LAYERS[bl], j, tmp_dist, tmp_orie);
                 bci.nei_pts_.emplace_back(DIST_BIN_LAYERS[bl], j, dist_idx, tmp_dist, tmp_orie);
               }
             }
           }
-
+          // 描述子按dist_idx排列
           if (!bci.nei_pts_.empty()) {
             std::sort(bci.nei_pts_.begin(), bci.nei_pts_.end(),
                       [&](const BCI::RelativePoint &p1, const BCI::RelativePoint &p2) {
@@ -879,14 +884,14 @@ public:
           }
 
         }
-//        if(key.sum()!=0)
+        // if(key.sum()!=0)
         layer_key_bcis_[ll].emplace_back(bci);  // no validity check on bci. check key before use bci!
         layer_keys_[ll].emplace_back(key);  // even invalid keys are recorded.
 
-//        printf("Key: l%d s%d: ", ll, seq);
-//        for (float &ki: key.array)
-//          printf("%8.4f ", ki);
-//        printf("\n");
+        // printf("Key: l%d s%d: ", ll, seq);
+        // for (float &ki: key.array)
+        //   printf("%8.4f ", ki);
+        // printf("\n");
       }
     }
 
@@ -896,22 +901,22 @@ public:
     }
 
     // print top 2 features in each
-//    for (int i = 0; i < cfg_.lv_grads_.size(); i++) {
-//      printf("\nLevel %d top 2 statistics:\n", i);
-//      for (int j = 0; j < std::min(2lu, cont_views_[i].size()); j++) {
-//        printf("# %d:\n", j);
-//        std::cout << "Cell count " << cont_views_[i][j]->cell_cnt_ << std::endl;
-//        std::cout << "Eigen Vals " << cont_views_[i][j]->eig_vals_.transpose() << std::endl;
-//        std::cout << "com - cent " << (cont_views_[i][j]->com_ - cont_views_[i][j]->pos_mean_).transpose() << std::endl;
-//        std::cout << "Total vol  " << cont_views_[i][j]->cell_vol3_ << std::endl;
-//      }
-//    }
+    // for (int i = 0; i < cfg_.lv_grads_.size(); i++) {
+    //   printf("\nLevel %d top 2 statistics:\n", i);
+    //   for (int j = 0; j < std::min(2lu, cont_views_[i].size()); j++) {
+    //     printf("# %d:\n", j);
+    //     std::cout << "Cell count " << cont_views_[i][j]->cell_cnt_ << std::endl;
+    //     std::cout << "Eigen Vals " << cont_views_[i][j]->eig_vals_.transpose() << std::endl;
+    //     std::cout << "com - cent " << (cont_views_[i][j]->com_ - cont_views_[i][j]->pos_mean_).transpose() << std::endl;
+    //     std::cout << "Total vol  " << cont_views_[i][j]->cell_vol3_ << std::endl;
+    //   }
+    // }
 
-#if SAVE_MID_FILE
+    #if SAVE_MID_FILE
     // save statistics of this scan:
     std::string fpath = std::string(PJSRCDIR) + "/results/contours_orig-" + str_id_ + ".txt";
     saveContours(fpath, cont_views_);
-#endif
+    #endif
 
     int cnt = 0;
     printf("Manager data sizes:\n");
@@ -925,7 +930,7 @@ public:
     for (const auto &itms: layer_keys_)
       for (const auto &itm: itms)
         cnt++;
-    printf("layer_keys_: %d\n", cnt);
+    printf("layer_keys_: %d\n", cnt);  //  6 layers * 6 anchors
 
     cnt = 0;
     for (const auto &itms: layer_key_bcis_)
@@ -940,19 +945,19 @@ public:
 
 
     // ablation study:
-//    bev_.release();
-//    bev_.release();
-//    bev_pixfs_.clear();
-//    cont_views_.clear();
-//    layer_key_bcis_.clear();
-//    layer_keys_.clear();
+    // bev_.release();
+    // bev_.release();
+    // bev_pixfs_.clear();
+    // cont_views_.clear();
+    // layer_key_bcis_.clear();
+    // layer_keys_.clear();
 
 
 
-//    cv::imwrite("cart_context-mask-" + std::to_string(3) + "-" + str_id_ + "rec.png", visualization);
-//    for (const auto &x: cont_views_) {
-//      printf("level size: %lu\n", x.size());
-//    }
+    // cv::imwrite("cart_context-mask-" + std::to_string(3) + "-" + str_id_ + "rec.png", visualization);
+    // for (const auto &x: cont_views_) {
+    //   printf("level size: %lu\n", x.size());
+    // }
   }
 
   // save accumulated contours to a file that is readable to the python script
